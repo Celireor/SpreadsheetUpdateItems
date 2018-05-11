@@ -124,7 +124,7 @@ namespace spreadsheettoitem.KVParser
                                         default:
                                             {
                                                 if (y != CurrentKV.ValueComment.Length - 1) {
-                                                    ParentKV.ValueComment = CurrentKV.ValueComment.Substring(y - 1);
+                                                    ParentKV.ValueComment = CurrentKV.ValueComment.Substring(y + 1);
                                                     CurrentKV.ValueComment = CurrentKV.ValueComment.Substring(0, y + 1);
                                                 }
                                                 y = -1;

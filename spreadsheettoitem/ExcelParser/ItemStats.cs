@@ -68,11 +68,11 @@ namespace spreadsheettoitem.ExcelParser
                 sheet.ChildKVs.Add(modifiersSheet);
             }
 
-            KVPair statModifierSheet = modifiersSheet.ChildKVs.Find(obj => obj.Key == StatPrintMaster.StatModifier);
+            KVPair statModifierSheet = modifiersSheet.ChildKVs.Find(obj => obj.Key == ProgramData.Settings.StatModifier);
             if (statModifierSheet == null)
             {
-                statModifierSheet = new KVPair(StatPrintMaster.StatModifier, 3);
-                statModifierSheet.Key = StatPrintMaster.StatModifier;
+                statModifierSheet = new KVPair(ProgramData.Settings.StatModifier, 3);
+                statModifierSheet.Key = ProgramData.Settings.StatModifier;
                 modifiersSheet.ChildKVs.Add(statModifierSheet);
 
                 statModifierSheet.ChildKVs.Add(new KVPair("Passive", "1", 4));
@@ -86,36 +86,18 @@ namespace spreadsheettoitem.ExcelParser
             }
 
             for (int x = 0; x < 12; x++) {
-                StatPrintMaster.StatPrints[x].Print(abilitySpecial, PropertiesSheet, Values[x]);
+                ProgramData.Settings.StatPrints[x].Print(abilitySpecial, PropertiesSheet, Values[x]);
             }
             //new StatPrint("FIELD_INTEGER", "agility").Print(abilitySpecial, null, 50);
         }
     }
 
-    public static class StatPrintMaster {
+    public static class s {
         public static StatPrint[] StatPrints = new StatPrint[12];
         public static string StatModifier;
-
-        static StatPrintMaster()
-        {
-            Console.WriteLine("As this is your first time using Le Spreadsheet To Dota Item KV, please fill in the following information:");
-            Console.WriteLine("Modifier used to store stats:");
-            StatModifier = Console.ReadLine();
-            StatPrints[0] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_STATS_STRENGTH_BONUS Variable:", "MODIFIER_PROPERTY_STATS_STRENGTH_BONUS");
-            StatPrints[1] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_STATS_AGILITY_BONUS Variable:", "MODIFIER_PROPERTY_STATS_AGILITY_BONUS");
-            StatPrints[2] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_STATS_INTELLECT_BONUS Variable:", "MODIFIER_PROPERTY_STATS_INTELLECT_BONUS");
-            StatPrints[3] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_PREATTACK_BONUS_DAMAGE Variable:", "MODIFIER_PROPERTY_PREATTACK_BONUS_DAMAGE");
-            StatPrints[4] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_ATTACKSPEED_BONUS_CONSTANT Variable:", "MODIFIER_PROPERTY_ATTACKSPEED_BONUS_CONSTANT");
-            StatPrints[5] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_MOVESPEED_BONUS_CONSTANT Variable:", "MODIFIER_PROPERTY_MOVESPEED_BONUS_CONSTANT");
-            StatPrints[6] = new StatPrint("FIELD_INTEGER", "MODIFIER_PROPERTY_HEALTH_BONUS Variable:", "MODIFIER_PROPERTY_HEALTH_BONUS");
-            StatPrints[7] = new StatPrint("FIELD_FLOAT", "MODIFIER_PROPERTY_MANA_BONUS Variable:", "MODIFIER_PROPERTY_MANA_BONUS");
-            StatPrints[8] = new StatPrint("FIELD_FLOAT", "MODIFIER_PROPERTY_PHYSICAL_ARMOR_BONUS Variable:", "MODIFIER_PROPERTY_PHYSICAL_ARMOR_BONUS");
-            StatPrints[9] = new StatPrint("FIELD_FLOAT", "MODIFIER_PROPERTY_HEALTH_REGEN_CONSTANT Variable:", "MODIFIER_PROPERTY_HEALTH_REGEN_CONSTANT");
-            StatPrints[10] = new StatPrint("FIELD_FLOAT", "MODIFIER_PROPERTY_MANA_REGEN_CONSTANT Variable:", "MODIFIER_PROPERTY_MANA_REGEN_CONSTANT");
-            StatPrints[11] = new StatPrint("FIELD_FLOAT", "MODIFIER_PROPERTY_MAGICAL_RESISTANCE_BONUS Variable:", "MODIFIER_PROPERTY_MAGICAL_RESISTANCE_BONUS");
-        }
     }
 
+    [Serializable()]
     public class StatPrint {
         string var_type;
         string name;
