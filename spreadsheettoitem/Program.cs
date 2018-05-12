@@ -18,33 +18,45 @@ namespace spreadsheettoitem
     {
         public const string dataFile = "/data.xml";
         public const string pathFile = "/defaultPath.xml";
+        public const string itemDefinitionsFile = "/itemDefinitions.xml";
         public static string DataPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
         public static ProgramSettings Settings;
+
         public static string PathToModify;
+
+        public static List<Tuple<string, string>> DisplayToInternal_Preconversion = new List<Tuple<string, string>>();
+        public static Tuple<string, string>[] DisplayToInternal;
 
         static ProgramData()
         {
-            if (File.Exists(DataPath + pathFile))
+            DisplayToInternal = (Tuple<string, string>[])LoadData(itemDefinitionsFile);
+            if (DisplayToInternal == null)
             {
-                Stream stream = File.Open(DataPath + pathFile, FileMode.Open);
-                BinaryFormatter formatter = new BinaryFormatter();
-                PathToModify = (string)formatter.Deserialize(stream);
-                stream.Close();
+                DisplayToInternal = new Tuple<string, string>[0];
             }
-            else {
-
+            PathToModify = (string)LoadData(pathFile);
+            if (PathToModify == null)
+            {
                 Console.WriteLine("Please type the full path of the Dota custom items file you wish to modify.");
                 PathToModify = Console.ReadLine();
             }
-
-            if (File.Exists(DataPath + dataFile))
-            {
-                Stream stream = File.Open(DataPath + dataFile, FileMode.Open);
-                BinaryFormatter formatter = new BinaryFormatter();
-                Settings = (ProgramSettings)formatter.Deserialize(stream);
-                stream.Close();
+            Settings = (ProgramSettings)LoadData(dataFile);
+            if (Settings == null) {
+                Settings = new ProgramSettings();
             }
-            else { Settings = new ProgramSettings(); }
+        }
+
+        static object LoadData(string fileName) {
+            if (File.Exists(DataPath + fileName))
+            {
+                Stream stream = File.Open(DataPath + fileName, FileMode.Open);
+                BinaryFormatter formatter = new BinaryFormatter();
+                object rv = formatter.Deserialize(stream);
+                stream.Close();
+                return rv;
+            }
+            return null;
         }
     }
 
@@ -79,20 +91,28 @@ namespace spreadsheettoitem
 
         static void Main(string[] args)
         {
+            if (args.Length > 0) {
 
-            Open(ProgramData.PathToModify);
-            //Save data
-            Stream stream = File.Open(ProgramData.DataPath + ProgramData.dataFile, FileMode.OpenOrCreate);
+                Open(ProgramData.PathToModify, args[0]);
+                //Save data
+                SaveSetting(ProgramData.dataFile, ProgramData.Settings);
+                SaveSetting(ProgramData.pathFile, ProgramData.PathToModify);
+                SaveSetting(ProgramData.itemDefinitionsFile, ProgramData.DisplayToInternal_Preconversion.ToArray());
+            }
+        }
+
+        static void SaveSetting(string FileName, object ObjectToSerialize) {
+
+
+            Stream stream = File.Open(ProgramData.DataPath + FileName, FileMode.OpenOrCreate);
             BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, ProgramData.Settings);
-            stream.Close();
-            stream = File.Open(ProgramData.DataPath + ProgramData.pathFile, FileMode.OpenOrCreate);
-            formatter.Serialize(stream, ProgramData.PathToModify);
+            formatter.Serialize(stream, ObjectToSerialize);
             stream.Close();
         }
 
-        static void Open(string Path) {
-            string RawKV = File.ReadAllText(Path);
+        static void Open(string LuaPath, string CsvPath) {
+            string RawKV = File.ReadAllText(LuaPath);
+            string RawCSV = File.ReadAllText(CsvPath);
             string ErrorMessage;
             KVPair thiskv = KVParser.KVParser.Parse(RawKV, out ErrorMessage);
             if (thiskv == null)
@@ -102,8 +122,14 @@ namespace spreadsheettoitem
             }
             else
             {
-                ItemStats.UpdateSheet(thiskv.ChildKVs[0]);
-                File.WriteAllText(@Path, thiskv.Print());
+                List<ItemStats> itemStats = CsvParser.Parse(RawCSV);
+                int index = 0;
+                itemStats.ForEach(obj => {
+                    obj.FindSheet(thiskv, index);
+                    obj.UpdateSheet();
+                    index++;
+                });
+                File.WriteAllText(LuaPath, thiskv.Print());
             }
         }
     }   

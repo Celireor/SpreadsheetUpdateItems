@@ -40,7 +40,9 @@ namespace spreadsheettoitem.ExcelParser
         public float MPRegen;
         public float MagicResist;*/
 
-        public static float[] Values = new float[12] {
+        public string Name;
+        KVPair sheet;
+        public float[] Values = new float[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; /* {
             129,
             132,
             122,
@@ -53,12 +55,56 @@ namespace spreadsheettoitem.ExcelParser
             125,
             123,
             54
-        };
+        };*/
 
-        public static void UpdateSheet(KVPair sheet)
+        public void FindSheet(KVPair RootSheet, int Index) {
+            //Try finding based on this DisplayToInternal index (fastest if it works)
+            if (ProgramData.DisplayToInternal.Length > Index && SearchSheet(RootSheet, Index) == true) { return; }
+            //Try finding based on the entire index lookup
+            for (int x = 0; x < ProgramData.DisplayToInternal.Length; x++) {
+                if (SearchSheet(RootSheet, x) == true) { return; }
+            }
+            //Try using the name as item ID
+            sheet = RootSheet.ChildKVs.Find(obj => obj.Key == Name.ToLower());
+            if (LogSheet()) { return; };
+            //Try adding item_ to the start of the name
+            sheet = RootSheet.ChildKVs.Find(obj => obj.Key == ("item_" + Name.ToLower()));
+            //If false, give up. Ask the user what the item id is.
+            while (LogSheet() == false) {
+                Console.WriteLine("Cannot find internal item name for \"" + Name + "\". Please key in the internal item name.");
+                string internal_name = Console.ReadLine();
+                sheet = RootSheet.ChildKVs.Find(obj => obj.Key == (internal_name));
+            }
+        }
+
+        bool SearchSheet(KVPair RootSheet, int Index) {
+
+            if (ProgramData.DisplayToInternal[Index].Item1 == Name)
+            {
+                sheet = RootSheet.ChildKVs.Find(obj => obj.Key == ProgramData.DisplayToInternal[Index].Item2);
+                return LogSheet();
+            }
+            return false;
+        }
+
+        bool LogSheet() {
+
+            if (sheet != null)
+            {
+                Console.WriteLine("Logged internal item name for \"" + Name + "\" as \"" + sheet.Key + "\"");
+                ProgramData.DisplayToInternal_Preconversion.Add(new Tuple<string, string>(Name, sheet.Key));
+                return true;
+            }
+            return false;
+        }
+
+        public void UpdateSheet()
         {
-
             KVPair abilitySpecial = sheet.ChildKVs.Find(obj => obj.Key == "AbilitySpecial");
+            if (abilitySpecial == null) {
+                abilitySpecial = new KVPair("AbilitySpecial", 2);
+                sheet.ChildKVs.Add(abilitySpecial);
+            }
             int abilitySpecialCount = abilitySpecial.ChildKVs.Count();
             //StatPrintMaster.statPrints[0].Print(abilitySpecial, null, 50);
 
@@ -90,11 +136,6 @@ namespace spreadsheettoitem.ExcelParser
             }
             //new StatPrint("FIELD_INTEGER", "agility").Print(abilitySpecial, null, 50);
         }
-    }
-
-    public static class s {
-        public static StatPrint[] StatPrints = new StatPrint[12];
-        public static string StatModifier;
     }
 
     [Serializable()]
@@ -136,7 +177,7 @@ namespace spreadsheettoitem.ExcelParser
             if (PropertyKV == null && Value != 0)
             {
 
-                PropertyKV = new KVPair(modifier_name, "%" + name, 4);
+                PropertyKV = new KVPair(modifier_name, "%" + name, 5);
                 Modifiers.ChildKVs.Add(PropertyKV);
             }
         }

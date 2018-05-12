@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelParser\ExcelParser.cs" />
     <Compile Include="ExcelParser\ItemStats.cs" />
     <Compile Include="KVParser\KVPair.cs" />
     <Compile Include="KVParser\KVParser.cs" />
