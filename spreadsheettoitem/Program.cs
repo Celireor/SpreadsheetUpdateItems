@@ -19,7 +19,7 @@ namespace spreadsheettoitem
         public const string dataFile = "/data.xml";
         public const string pathFile = "/defaultPath.xml";
         public const string itemDefinitionsFile = "/itemDefinitions.xml";
-        public static string DataPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        public static string DataPath = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/SpreadSheetToDotaItem";
 
         public static ProgramSettings Settings;
 
@@ -30,6 +30,8 @@ namespace spreadsheettoitem
 
         static ProgramData()
         {
+            System.IO.Directory.CreateDirectory(DataPath);
+
             DisplayToInternal = (Tuple<string, string>[])LoadData(itemDefinitionsFile);
             if (DisplayToInternal == null)
             {
