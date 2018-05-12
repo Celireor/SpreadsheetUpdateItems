@@ -36,10 +36,15 @@ namespace spreadsheettoitem
                 DisplayToInternal = new Tuple<string, string>[0];
             }
             PathToModify = (string)LoadData(pathFile);
-            if (PathToModify == null)
+            while (PathToModify == null)
             {
                 Console.WriteLine("Please type the full path of the Dota custom items file you wish to modify.");
                 PathToModify = Console.ReadLine();
+                if (!File.Exists(PathToModify))
+                {
+                    Console.WriteLine("Unfortunately, that file does not exist.");
+                    PathToModify = null;
+                }
             }
             Settings = (ProgramSettings)LoadData(dataFile);
             if (Settings == null) {
