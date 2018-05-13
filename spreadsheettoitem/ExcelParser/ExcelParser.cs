@@ -36,7 +36,6 @@ namespace spreadsheettoitem.ExcelParser
                 else {
                     if (Line > 1 && NewLineCooldown <= 0)
                     {
-                        Console.WriteLine(Column);
                         if (Column >= 9 && Column <= 20)
                         {
                             currentItemStat.Values[Column - 9] *= 10;
@@ -45,7 +44,6 @@ namespace spreadsheettoitem.ExcelParser
                         else if (Column == 0)
                         {
                             currentItemStat.Name += Raw[x];
-                            Console.WriteLine(Raw[x]);
                         }
                     }
                 }

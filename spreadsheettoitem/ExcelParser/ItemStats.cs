@@ -61,7 +61,8 @@ namespace spreadsheettoitem.ExcelParser
             //Try finding based on this DisplayToInternal index (fastest if it works)
             if (ProgramData.DisplayToInternal.Length > Index && SearchSheet(RootSheet, Index) == true) { return; }
             //Try finding based on the entire index lookup
-            for (int x = 0; x < ProgramData.DisplayToInternal.Length; x++) {
+            for (int x = 0; x < ProgramData.DisplayToInternal.Length; x++)
+            {
                 if (SearchSheet(RootSheet, x) == true) { return; }
             }
             //Try using the name as item ID
@@ -70,7 +71,8 @@ namespace spreadsheettoitem.ExcelParser
             //Try adding item_ to the start of the name
             sheet = RootSheet.ChildKVs.Find(obj => obj.Key == ("item_" + Name.ToLower()));
             //If false, give up. Ask the user what the item id is.
-            while (LogSheet() == false) {
+            while (LogSheet() == false)
+            {
                 Console.WriteLine("Cannot find internal item name for \"" + Name + "\". Please key in the internal item name.");
                 string internal_name = Console.ReadLine();
                 sheet = RootSheet.ChildKVs.Find(obj => obj.Key == (internal_name));
@@ -78,7 +80,7 @@ namespace spreadsheettoitem.ExcelParser
         }
 
         bool SearchSheet(KVPair RootSheet, int Index) {
-
+            
             if (ProgramData.DisplayToInternal[Index].Item1 == Name)
             {
                 sheet = RootSheet.ChildKVs.Find(obj => obj.Key == ProgramData.DisplayToInternal[Index].Item2);

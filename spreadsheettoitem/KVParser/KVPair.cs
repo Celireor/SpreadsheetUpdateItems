@@ -4,8 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
+
 namespace spreadsheettoitem.KVParser
 {
+    public class KVFile {
+        public string Path;
+
+        public string PreKey = "";//comments before the first key
+        public KVPair root;
+        public List<KVPair> dependencies;
+        /*public KVFile(KVPair root, List<KVPair> dependencies) {
+            this.root = root;
+            this.dependencies = dependencies;
+        }*/
+
+        public void Save() {
+            File.WriteAllText(Path, Print());
+        }
+        string Print() {
+            string rv = PreKey;
+            dependencies.ForEach(obj => rv += obj.PrintAsDependency());
+            return rv + root.Print();
+        }
+
+    }
+
     public class KVPair
     {
         public KVPair Parent;
@@ -42,6 +66,10 @@ namespace spreadsheettoitem.KVParser
                 rv += "\"" + Value + "\"" + ValueComment;
             }
             return rv;
+        }
+
+        public string PrintAsDependency() {
+            return "#base \"" + Value + "\"" + Environment.NewLine;
         }
         
         void FormatAsStringValue(int TabCount) {

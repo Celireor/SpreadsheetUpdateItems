@@ -19,6 +19,9 @@ namespace spreadsheettoitem
         public const string dataFile = "/data.xml";
         public const string pathFile = "/defaultPath.xml";
         public const string itemDefinitionsFile = "/itemDefinitions.xml";
+
+        public const string itemsBaseFile = "/npc_items_custom.txt";
+
         public static string DataPath = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/SpreadSheetToDotaItem";
 
         public static ProgramSettings Settings;
@@ -42,9 +45,9 @@ namespace spreadsheettoitem
             {
                 Console.WriteLine("Please type the full path of the Dota custom items file you wish to modify.");
                 PathToModify = Console.ReadLine();
-                if (!File.Exists(PathToModify))
+                if (!File.Exists(PathToModify + itemsBaseFile))
                 {
-                    Console.WriteLine("Unfortunately, that file does not exist.");
+                    Console.WriteLine("Unfortunately, that file does not contain " + itemsBaseFile + ".");
                     PathToModify = null;
                 }
             }
@@ -118,25 +121,34 @@ namespace spreadsheettoitem
         }
 
         static void Open(string LuaPath, string CsvPath) {
-            string RawKV = File.ReadAllText(LuaPath);
             string RawCSV = File.ReadAllText(CsvPath);
+            /*string RawKV = File.ReadAllText(LuaPath);
             string ErrorMessage;
-            KVPair thiskv = KVParser.KVParser.Parse(RawKV, out ErrorMessage);
-            if (thiskv == null)
+            KVFile thiskv = KVParser.KVParser.Parse(RawKV, out ErrorMessage);*/
+
+            string ErrorMessage;
+            List<KVFile> thiskv = KVParser.KVParser.Compile(LuaPath, ProgramData.itemsBaseFile, out ErrorMessage);
+
+            if (thiskv == null || ErrorMessage != "")
             {
                 Console.WriteLine(ErrorMessage);
                 Console.ReadKey();
             }
             else
             {
+                KVPair concatKV = new KVPair();
+                thiskv.ForEach(obj => concatKV.ChildKVs.AddRange(obj.root.ChildKVs));
+
                 List<ItemStats> itemStats = CsvParser.Parse(RawCSV);
                 int index = 0;
                 itemStats.ForEach(obj => {
-                    obj.FindSheet(thiskv, index);
+                    obj.FindSheet(concatKV, index);
                     obj.UpdateSheet();
                     index++;
                 });
-                File.WriteAllText(LuaPath, thiskv.Print());
+
+                thiskv.ForEach(obj => obj.Save());
+                //File.WriteAllText(LuaPath, thiskv.Print());
             }
         }
     }   

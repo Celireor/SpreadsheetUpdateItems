@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
+
 namespace spreadsheettoitem.KVParser
 {
 
@@ -34,8 +36,67 @@ namespace spreadsheettoitem.KVParser
             }return "";
         }
 
-        public static KVPair Parse(string Raw, out string ErrorMessage) {
-            KVPair rv = null;
+        public static List<KVFile> Compile(string FolderPath, string FileName, out string ErrorMessage)
+        {
+            Console.WriteLine(FolderPath);
+            Console.WriteLine(FileName);
+            
+            List<KVFile> rv = new List<KVFile>();
+
+            string FullPath = FolderPath + FileName;
+
+            string RawKV = File.ReadAllText(FullPath);
+
+            string DependencyParseError = "";
+            KVFile thiskv = Parse(RawKV, out ErrorMessage);
+            thiskv.Path = FullPath;
+
+            if (ErrorMessage != "") { return null; }
+
+            rv.Add(thiskv);
+            thiskv.dependencies.ForEach(obj => {
+                if (FolderPath[FolderPath.Length - 1] != '/' &&
+                FolderPath[FolderPath.Length - 1] != '\\') {
+                    FolderPath += '\\';
+                }
+
+                string NewFolderPath = FolderPath + obj.Value;
+
+                int index = NewFolderPath.LastIndexOf('/');
+                int backslashIndex = NewFolderPath.LastIndexOf('\\');
+                if (backslashIndex > index) {
+                    index = backslashIndex;
+                }
+                if (index == -1) {
+                    index = 0;
+                }
+
+                string dependencyError;
+
+                List<KVFile> dependency = Compile(
+                    NewFolderPath.Substring(0, index),
+                    NewFolderPath.Substring(index),
+                    out dependencyError);
+                rv.AddRange(dependency);
+
+                if (DependencyParseError == "")
+                {
+                    DependencyParseError = dependencyError;
+                }
+                else {
+                    rv.AddRange(dependency);
+                }
+            });
+            ErrorMessage = DependencyParseError;
+            if (ErrorMessage != "") { return null; }
+            return rv;
+        }
+
+        public static KVFile Parse(string Raw, out string ErrorMessage) {
+            List<KVPair> includePaths = new List<KVPair>();
+
+            KVFile rv = new KVFile();
+            KVPair rvBase = null;
             KVPair ParentKV = null;
             KVPair CurrentKV = null;
             int Line = 0;
@@ -70,30 +131,40 @@ namespace spreadsheettoitem.KVParser
                                 }
                             }
                             break;
+                        case '#':
+                            {
+                                switch (parserState) {
+                                    case ParserState.BEFORE_KEY:
+                                    case ParserState.AFTER_VALUE:
+                                        CurrentKV = new KVPair();
+                                        parserState = ParserState.AFTER_KEY;
+                                        includePaths.Add(CurrentKV);
+                                        break;
+                                }
+                            }
+                            break;
                         case '"':
                             {
-                                if (parserState == ParserState.BEFORE_KEY) {
-                                    CurrentKV = new KVPair();
-                                    if (ParentKV != null)
-                                    {
-                                        CurrentKV.Parent = ParentKV;
-                                        ParentKV.ChildKVs.Add(CurrentKV);
-                                    }
-                                    if (rv == null) {
-                                        rv = CurrentKV;
-                                    }
+                                switch (parserState) {
+                                    case ParserState.BEFORE_KEY:
+                                    case ParserState.AFTER_VALUE:
+                                    case ParserState.BEFORE_FIRST_ELEMENT:
+                                        CurrentKV = new KVPair();
+                                        if (ParentKV != null)
+                                        {
+                                            CurrentKV.Parent = ParentKV;
+                                            ParentKV.ChildKVs.Add(CurrentKV);
+                                        }
+                                        if (rvBase == null)
+                                        {
+                                            rvBase = CurrentKV;
+                                        }
+                                        parserState = ParserState.KEY;
+                                        break;
+                                    default:
+                                        parserState++;
+                                        break;
                                 }
-                                if (parserState == ParserState.AFTER_VALUE || parserState == ParserState.BEFORE_FIRST_ELEMENT)
-                                {
-                                    parserState = ParserState.KEY;
-                                    CurrentKV = new KVPair();
-                                    if (ParentKV != null)
-                                    {
-                                        CurrentKV.Parent = ParentKV;
-                                        ParentKV.ChildKVs.Add(CurrentKV);
-                                    }
-                                }
-                                else { parserState++; }
                             }
                             break;
                         case '{':
@@ -143,7 +214,7 @@ namespace spreadsheettoitem.KVParser
 
                 if (Raw[x] != '"' || commentState != CommentState.NOT_COMMENT) {
 
-                    WriteToKV(CurrentKV, parserState, Raw[x]);
+                    WriteToKV(rv, CurrentKV, parserState, Raw[x]);
                 }
                 if (SafeSubstring(Raw, x, Environment.NewLine.Length) == Environment.NewLine) {
                     Line++;
@@ -156,13 +227,16 @@ namespace spreadsheettoitem.KVParser
 
             }
             ErrorMessage = "";
+            rv.root = rvBase; 
+            rv.dependencies = includePaths;
             return rv;
         }
 
-        static void WriteToKV(KVPair PairToWrite, ParserState parserState, char newCharToWrite) {
+        static void WriteToKV(KVFile FileToWrite, KVPair PairToWrite, ParserState parserState, char newCharToWrite)
+        {
             switch (parserState) {
                 case ParserState.BEFORE_KEY:
-                    PairToWrite.PreKeyComment += newCharToWrite;
+                    FileToWrite.PreKey += newCharToWrite;
                     break;
                 case ParserState.KEY:
                     PairToWrite.Key += newCharToWrite;
