@@ -181,7 +181,7 @@ namespace spreadsheettoitem.KVParser
                         case '}':
                             {
 
-                                //parserState = ParserState.BEFORE_KEY;
+                                parserState = ParserState.AFTER_VALUE;
                                 if (ParentKV == null) {
                                     ErrorMessage = "Item KV Curly Braces are not balanced";
                                     return null;
@@ -195,8 +195,11 @@ namespace spreadsheettoitem.KVParser
                                         default:
                                             {
                                                 if (y != CurrentKV.ValueComment.Length - 1) {
-                                                    ParentKV.ValueComment = CurrentKV.ValueComment.Substring(y + 1);
-                                                    CurrentKV.ValueComment = CurrentKV.ValueComment.Substring(0, y + 1);
+                                                    if (ParentKV.ChildKVs.Count > 0)
+                                                    {
+                                                        ParentKV.ValueComment = CurrentKV.ValueComment.Substring(y + 1);
+                                                        CurrentKV.ValueComment = CurrentKV.ValueComment.Substring(0, y + 1);
+                                                    }
                                                 }
                                                 y = -1;
                                             }

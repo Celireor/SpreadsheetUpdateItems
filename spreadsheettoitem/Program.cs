@@ -101,14 +101,29 @@ namespace spreadsheettoitem
 
         static void Main(string[] args)
         {
-            if (args.Length > 0) {
+            if (args.Length > 0)
+            {
 
                 Open(ProgramData.PathToModify, args[0]);
-                //Save data
-                SaveSetting(ProgramData.dataFile, ProgramData.Settings);
-                SaveSetting(ProgramData.pathFile, ProgramData.PathToModify);
-                SaveSetting(ProgramData.itemDefinitionsFile, ProgramData.DisplayToInternal_Preconversion.ToArray());
             }
+            else
+            {
+                string sourceCSVfile = null;
+                while (sourceCSVfile == null) {
+                    Console.WriteLine("Please enter the path of your source .csv file.");
+                    sourceCSVfile = Console.ReadLine();
+                    if (!File.Exists(sourceCSVfile))
+                    {
+                        Console.WriteLine("Unfortunately, that file cannot be accessed or does not exist.");
+                        sourceCSVfile = null;
+                    }
+                }
+                Open(ProgramData.PathToModify, sourceCSVfile);
+            }
+            //Save data
+            SaveSetting(ProgramData.dataFile, ProgramData.Settings);
+            SaveSetting(ProgramData.pathFile, ProgramData.PathToModify);
+            SaveSetting(ProgramData.itemDefinitionsFile, ProgramData.DisplayToInternal_Preconversion.ToArray());
         }
 
         static void SaveSetting(string FileName, object ObjectToSerialize) {
