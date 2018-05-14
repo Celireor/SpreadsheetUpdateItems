@@ -192,30 +192,6 @@ namespace spreadsheettoitem.KVParser
                                 }
                                 else { Tabs(ref ParentKV.KeyComment, ref ParentKV.ValueComment); }
 
-                                /*string LastComment = CurrentKV.ValueComment;
-                                if(LastComment == )
-                                for (int y = CurrentKV.ValueComment.Length - 1; y >= 0; y--) {
-                                    switch (CurrentKV.ValueComment[y])
-                                    {
-                                        case '\t':
-                                        case ' ':
-                                            break;
-                                        default:
-                                            {
-                                                if (y != CurrentKV.ValueComment.Length - 1) {
-                                                    if (ParentKV.ChildKVs.Count > 0)
-                                                    {
-                                                        ParentKV.ValueComment = CurrentKV.ValueComment.Substring(y + 1);
-                                                        CurrentKV.ValueComment = CurrentKV.ValueComment.Substring(0, y + 1);
-                                                    }
-                                                }
-                                                y = -1;
-                                            }
-                                            break;
-                                    }
-                                }*/
-                                //ParentKV.ValueComment = CurrentKV.ValueComment;
-                               // CurrentKV.ValueComment = "";
                                 CurrentKV = ParentKV;
                                 ParentKV = ParentKV.Parent;
                             }

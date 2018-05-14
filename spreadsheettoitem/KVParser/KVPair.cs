@@ -68,6 +68,17 @@ namespace spreadsheettoitem.KVParser
             return rv;
         }
 
+        public KVPair FindOrGenerateChildKV(string key, int Index, params KVPair[] defaultChildren) {
+            KVPair rv = ChildKVs.Find(obj => obj.Key == key);
+            if (rv == null)
+            {
+                rv = new KVPair(key, Index);
+                ChildKVs.Add(rv);
+                rv.ChildKVs = defaultChildren.ToList();
+            }
+            return rv;
+        }
+
         public string PrintAsDependency() {
             return "#base \"" + Value + "\"" + Environment.NewLine;
         }

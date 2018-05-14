@@ -93,12 +93,12 @@ namespace spreadsheettoitem.ExcelParser
 
         public void UpdateSheet()
         {
-            KVPair abilitySpecial = sheet.ChildKVs.Find(obj => obj.Key == "AbilitySpecial");
+            /*KVPair abilitySpecial = sheet.ChildKVs.Find(obj => obj.Key == "AbilitySpecial");
             if (abilitySpecial == null) {
                 abilitySpecial = new KVPair("AbilitySpecial", 2);
                 sheet.ChildKVs.Add(abilitySpecial);
             }
-            int abilitySpecialCount = abilitySpecial.ChildKVs.Count();
+            //int abilitySpecialCount = abilitySpecial.ChildKVs.Count();
             //StatPrintMaster.statPrints[0].Print(abilitySpecial, null, 50);
 
             KVPair modifiersSheet = sheet.ChildKVs.Find(obj => obj.Key == "Modifiers");
@@ -122,7 +122,15 @@ namespace spreadsheettoitem.ExcelParser
             if (PropertiesSheet == null) {
                 PropertiesSheet = new KVPair("Properties", 4);
                 statModifierSheet.ChildKVs.Add(PropertiesSheet);
-            }
+            }*/
+
+            KVPair abilitySpecial = sheet.FindOrGenerateChildKV("AbilitySpecial", 2);
+            KVPair modifiersSheet = sheet.FindOrGenerateChildKV("Modifiers", 2);
+            KVPair statModifierSheet = modifiersSheet.FindOrGenerateChildKV(ProgramData.Settings.StatModifier, 3,
+                new KVPair("Passive", "1", 4),
+                new KVPair("IsHidden", "1", 4),
+                new KVPair("Attributes", "MODIFIER_ATTRIBUTE_MULTIPLE", 4));
+            KVPair PropertiesSheet = statModifierSheet.FindOrGenerateChildKV("Properties", 4);
 
             for (int x = 0; x < 12; x++) {
                 ProgramData.Settings.StatPrints[x].Print(abilitySpecial, PropertiesSheet, Values[x]);
