@@ -8,7 +8,7 @@ using spreadsheettoitem.KVParser;
 
 namespace spreadsheettoitem.ExcelParser
 {
-    enum StatColumns
+    /*enum StatColumns
     {
         Strength = 9,
         Agility = 10,
@@ -22,7 +22,7 @@ namespace spreadsheettoitem.ExcelParser
         HPRegen = 18,
         MPRegen = 19,
         MagicResist = 20
-    }
+    }*/
     public class ItemStats
     {
 
@@ -39,44 +39,35 @@ namespace spreadsheettoitem.ExcelParser
         public float HPRegen;
         public float MPRegen;
         public float MagicResist;*/
-
+        
         public string Name;
         KVPair sheet;
-        public float[] Values = new float[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; /* {
-            129,
-            132,
-            122,
-            32,
-            13,
-            45,
-            21,
-            124,
-            23,
-            125,
-            123,
-            54
-        };*/
+        public float[] Values = new float[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        public void FindSheet(KVPair RootSheet, int Index) {
+        public KVPair FindSheet(KVPair RootSheet, int Index) {
             //Try finding based on this DisplayToInternal index (fastest if it works)
-            if (ProgramData.DisplayToInternal.Length > Index && SearchSheet(RootSheet, Index) == true) { return; }
+            if (ProgramData.DisplayToInternal.Length > Index && SearchSheet(RootSheet, Index) == true) { return null; }
             //Try finding based on the entire index lookup
             for (int x = 0; x < ProgramData.DisplayToInternal.Length; x++)
             {
-                if (SearchSheet(RootSheet, x) == true) { return; }
+                if (SearchSheet(RootSheet, x) == true) { return null; }
             }
             //Try using the name as item ID
             sheet = RootSheet.ChildKVs.Find(obj => obj.Key == Name.ToLower());
-            if (LogSheet()) { return; };
+            if (LogSheet()) { return null; };
             //Try adding item_ to the start of the name
             sheet = RootSheet.ChildKVs.Find(obj => obj.Key == ("item_" + Name.ToLower()));
             //If false, give up. Ask the user what the item id is.
-            while (LogSheet() == false)
-            {
-                Console.WriteLine("Cannot find internal item name for \"" + Name + "\". Please key in the internal item name.");
-                string internal_name = Console.ReadLine();
-                sheet = RootSheet.ChildKVs.Find(obj => obj.Key == (internal_name));
-            }
+            if (LogSheet()) { return null; };
+            Console.WriteLine("Cannot find internal item name for \"" + Name + "\". Please key in the internal item name or the internal item name you want the item to have.");
+            string internal_name = Console.ReadLine();
+            sheet = RootSheet.ChildKVs.Find(obj => obj.Key == (internal_name));
+            if (LogSheet()) { return null; };
+            Console.WriteLine("Item name is not found. Generating item.");
+            KVPair newItem = new KVPair(internal_name, 1);
+            sheet = newItem;
+            LogSheet();
+            return newItem;
         }
 
         bool SearchSheet(KVPair RootSheet, int Index) {

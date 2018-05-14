@@ -156,8 +156,12 @@ namespace spreadsheettoitem
 
                 List<ItemStats> itemStats = CsvParser.Parse(RawCSV);
                 int index = 0;
+
                 itemStats.ForEach(obj => {
-                    obj.FindSheet(concatKV, index);
+                    KVPair sheet = obj.FindSheet(concatKV, index);
+                    if (sheet != null) {
+                        thiskv[0].root.ChildKVs.Add(sheet);
+                    }
                     obj.UpdateSheet();
                     index++;
                 });

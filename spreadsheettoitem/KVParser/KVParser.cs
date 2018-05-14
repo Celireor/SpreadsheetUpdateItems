@@ -186,6 +186,14 @@ namespace spreadsheettoitem.KVParser
                                     ErrorMessage = "Item KV Curly Braces are not balanced";
                                     return null;
                                 }
+                                if (ParentKV.ChildKVs.Count > 0)
+                                {
+                                    Tabs(ref CurrentKV.ValueComment, ref ParentKV.ValueComment);
+                                }
+                                else { Tabs(ref ParentKV.KeyComment, ref ParentKV.ValueComment); }
+
+                                /*string LastComment = CurrentKV.ValueComment;
+                                if(LastComment == )
                                 for (int y = CurrentKV.ValueComment.Length - 1; y >= 0; y--) {
                                     switch (CurrentKV.ValueComment[y])
                                     {
@@ -205,7 +213,7 @@ namespace spreadsheettoitem.KVParser
                                             }
                                             break;
                                     }
-                                }
+                                }*/
                                 //ParentKV.ValueComment = CurrentKV.ValueComment;
                                // CurrentKV.ValueComment = "";
                                 CurrentKV = ParentKV;
@@ -233,6 +241,29 @@ namespace spreadsheettoitem.KVParser
             rv.root = rvBase; 
             rv.dependencies = includePaths;
             return rv;
+        }
+
+        //split s1 into s1 and s2. s2 will only contain tabs and spaces.
+        static void Tabs(ref string s1, ref string s2) {
+            for (int y = s1.Length - 1; y >= 0; y--)
+            {
+                switch (s1[y])
+                {
+                    case '\t':
+                    case ' ':
+                        break;
+                    default:
+                        {
+                            if (y != s1.Length - 1)
+                            {
+                                s2 = s1.Substring(y + 1);
+                                s1 = s1.Substring(0, y + 1);
+                            }
+                            y = -1;
+                        }
+                        break;
+                }
+            }
         }
 
         static void WriteToKV(KVFile FileToWrite, KVPair PairToWrite, ParserState parserState, char newCharToWrite)
